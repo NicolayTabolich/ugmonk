@@ -111,10 +111,14 @@ main {
 
 .header {
   padding: 44px 0px 35px 0px;
+  background-color: #fff;
+  z-index: 22;
 }
 @media (max-width: 767.98px) {
   .header {
     padding-top: 25px;
+    z-index: 22;
+    padding: 20px 0px 10px 0px;
   }
 }
 .header__container {
@@ -244,7 +248,7 @@ main {
 @media (max-width: 767.98px) {
   .header__links {
     margin-left: auto;
-    z-index: 1;
+    z-index: 92;
   }
 }
 .header__icons {
@@ -357,11 +361,11 @@ main {
 
 @media (max-width: 767.98px) {
   .nav__list {
-    position: fixed;
+    position: absolute;
     top: -100%;
     left: 0;
     width: 100%;
-    height: calc(100vh - 90px);
+    height: 100%;
     overflow: auto;
     background-color: #fff;
     padding: 20px 10px 20px 10px;
@@ -369,7 +373,8 @@ main {
     transition: all 0.3s linear;
   }
   .nav__list.active {
-    top: 90px;
+    top: 50px;
+    padding: 30px 0 60px 0;
   }
 }
 .nav__items {
