@@ -536,6 +536,9 @@ body{
       & img:hover{
          transform: scale(1.07);
       }
+      @media (max-width: 767.98px){
+         padding-bottom: 120%;
+      }
    }
 
    // .item__products-body

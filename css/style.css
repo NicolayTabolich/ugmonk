@@ -641,6 +641,11 @@ main {
       -ms-transform: scale(1.07);
           transform: scale(1.07);
 }
+@media (max-width: 767.98px) {
+  .item__products-ibg {
+    padding-bottom: 120%;
+  }
+}
 .item__products-body {
   -webkit-box-flex: 1;
       -ms-flex: 1 1 auto;
