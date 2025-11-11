@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Каталог - 3d-hub.by</title>
+   <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+   <!-- Шапка сайта -->
+   <header class="header">
+      <div class="logo">
+         <svg viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20,10 L100,10 L100,40 L20,40 Z" fill="white" />
+            <text x="60" y="30" text-anchor="middle" fill="#10b981" font-size="14" font-weight="bold">3D-HUB.BY</text>
+         </svg>
+      </div>
+      <nav>
+         <ul class="nav-menu">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="catalog.html" class="active">Каталог</a></li>
+            <li><a href="about.html">О нас</a></li>
+            <li><a href="contacts.html">Контакты</a></li>
+            <li><a href="cart.html">Корзина</a></li>
+         </ul>
+      </nav>
+      <div class="header-right">
+         <a href="cart.html" class="cart-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+               <path
+                  d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+            </svg>
+            <div class="cart-count">0</div>
+         </a>
+         <div class="burger">
+            <span></span>
+            <span></span>
+            <span></span>
+         </div>
+      </div>
+   </header>
+
+   <!-- Основной контент -->
+   <main class="main-content">
+      <h1 class="page-title">Каталог товаров</h1>
+
+      <div class="catalog-container">
+         <!-- Боковая панель с фильтрами -->
+         <aside class="catalog-sidebar">
+            <div class="filter-section">
+               <h3 class="filter-title">Категории</h3>
+               <div class="filter-categories">
+                  <label class="filter-category">
+                     <input type="checkbox" name="category" value="all" checked>
+                     <span>Все товары</span>
+                  </label>
+                  <label class="filter-category">
+                     <input type="checkbox" name="category" value="toys">
+                     <span>Детские игрушки</span>
+                  </label>
+                  <label class="filter-category">
+                     <input type="checkbox" name="category" value="newyear">
+                     <span>Новый год 2026</span>
+                  </label>
+                  <label class="filter-category">
+                     <input type="checkbox" name="category" value="pots">
+                     <span>Кашпо и горшки</span>
+                  </label>
+                  <label class="filter-category">
+                     <input type="checkbox" name="category" value="decor">
+                     <span>Декор</span>
+                  </label>
+                  <label class="filter-category">
+                     <input type="checkbox" name="category" value="keychains">
+                     <span>Брелки</span>
+                  </label>
+                  <label class="filter-category">
+                     <input type="checkbox" name="category" value="organizers">
+                     <span>Органайзеры</span>
+                  </label>
+                  <label class="filter-category">
+                     <input type="checkbox" name="category" value="other">
+                     <span>Другое</span>
+                  </label>
+               </div>
+            </div>
+
+            <div class="filter-section">
+               <h3 class="filter-title">Сортировка</h3>
+               <select class="sort-select" id="sort-select">
+                  <option value="default">По умолчанию</option>
+                  <option value="price-asc">Цена: по возрастанию</option>
+                  <option value="price-desc">Цена: по убыванию</option>
+                  <option value="name-asc">Название: А-Я</option>
+                  <option value="name-desc">Название: Я-А</option>
+                  <option value="popular">По популярности</option>
+               </select>
+            </div>
+
+            <div class="filter-section">
+               <h3 class="filter-title">Цена</h3>
+               <div class="price-range">
+                  <div class="price-inputs">
+                     <input type="number" id="price-min" placeholder="0" min="0">
+                     <span>-</span>
+                     <input type="number" id="price-max" placeholder="500" min="0">
+                  </div>
+               </div>
+            </div>
+
+            <button class="filter-apply" id="apply-filters">Применить фильтры</button>
+            <button class="filter-reset" id="reset-filters">Сбросить фильтры</button>
+         </aside>
+
+         <!-- Основная область с товарами -->
+         <section class="catalog-main">
+            <div class="catalog-header">
+               <div class="catalog-info">
+                  <span id="products-count">Найдено 0 товаров</span>
+               </div>
+               <div class="view-options">
+                  <button class="view-btn active" data-view="grid">
+                     <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 3h8v8H3zm0 10h8v8H3zm10-10h8v8h-8zm0 10h8v8h-8z" />
+                     </svg>
+                  </button>
+                  <button class="view-btn" data-view="list">
+                     <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 13h18v-2H3v2zm0-6h18V5H3v2zm0 12h18v-2H3v2z" />
+                     </svg>
+                  </button>
+               </div>
+            </div>
+
+            <div class="products-grid" id="products-grid">
+               <!-- Товары будут добавляться динамически -->
+            </div>
+
+            <!-- Пагинация -->
+            <div class="pagination" id="pagination">
+               <!-- Кнопки пагинации будут добавляться динамически -->
+            </div>
+
+            <div class="catalog-loading" id="catalog-loading">
+               <div class="loading-spinner"></div>
+               <p>Загрузка товаров...</p>
+            </div>
+
+            <div class="no-products" id="no-products" style="display: none;">
+               <div class="no-products-icon">😔</div>
+               <h3>Товары не найдены</h3>
+               <p>Попробуйте изменить параметры фильтрации</p>
+            </div>
+         </section>
+      </div>
+   </main>
+
+   <!-- Уведомление о добавлении в корзину -->
+   <div class="cart-notification">Товар добавлен в корзину!</div>
+
+   <script src="js/app.js"></script>
+   <script src="js/catalog.js"></script>
+</body>
+
+</html>

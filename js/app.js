@@ -54,15 +54,9 @@ class Cart {
       return this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
    }
 
-   // Получение стоимости доставки
-   getShippingCost() {
-      const total = this.getItemsTotal();
-      return total > 0 ? (total > 100 ? 0 : 10) : 0;
-   }
-
-   // Получение итоговой суммы
+   // Получение итоговой суммы (без доставки, так как доставка по тарифам почты)
    getOrderTotal() {
-      return this.getItemsTotal() + this.getShippingCost();
+      return this.getItemsTotal();
    }
 
    // Добавление товара в корзину
@@ -88,23 +82,17 @@ class Cart {
    // Обновление сводки заказа
    updateOrderSummary() {
       const itemsTotalEl = document.getElementById('items-total');
-      const shippingCostEl = document.getElementById('shipping-cost');
       const orderTotalEl = document.getElementById('order-total');
       const checkoutBtn = document.getElementById('checkout-btn');
+      const itemsCountEl = document.getElementById('items-count');
 
       const itemsTotal = this.getItemsTotal();
-      const shippingCost = this.getShippingCost();
       const orderTotal = this.getOrderTotal();
+      const totalCount = this.getTotalCount();
 
       if (itemsTotalEl) itemsTotalEl.textContent = `${itemsTotal} руб.`;
-      if (shippingCostEl) shippingCostEl.textContent = `${shippingCost} руб.`;
       if (orderTotalEl) orderTotalEl.textContent = `${orderTotal} руб.`;
-
-      // Обновление текста в сводке заказа
-      const summaryRow = document.querySelector('.summary-row:first-child span:first-child');
-      if (summaryRow) {
-         summaryRow.textContent = `Товары (${this.getTotalCount()}):`;
-      }
+      if (itemsCountEl) itemsCountEl.textContent = `Товары (${totalCount}):`;
 
       // Блокировка кнопки оформления заказа, если корзина пуста
       if (checkoutBtn) {
@@ -133,7 +121,7 @@ class Cart {
                     <div class="empty-cart-icon">🛒</div>
                     <h2>Ваша корзина пуста</h2>
                     <p>Добавьте товары из каталога, чтобы сделать заказ</p>
-                    <a href="index.html" class="checkout-btn" style="display: inline-block; width: auto; padding: 12px 30px;">Перейти к покупкам</a>
+                    <a href="catalog.html" class="checkout-btn" style="display: inline-block; width: auto; padding: 12px 30px;">Перейти к покупкам</a>
                 </div>
             `;
          return;
@@ -198,7 +186,7 @@ class Cart {
 
    // Увеличение количества товара
    increaseQuantity(id) {
-      const item = this.items.find(item => item.id === id);
+      const item = this.items.find(item => item.id == id);
       if (item) {
          item.quantity += 1;
          this.saveCart();
@@ -207,7 +195,7 @@ class Cart {
 
    // Уменьшение количества товара
    decreaseQuantity(id) {
-      const item = this.items.find(item => item.id === id);
+      const item = this.items.find(item => item.id == id);
       if (item) {
          if (item.quantity > 1) {
             item.quantity -= 1;
@@ -221,7 +209,7 @@ class Cart {
 
    // Удаление товара из корзины
    removeItem(id) {
-      this.items = this.items.filter(item => item.id !== id);
+      this.items = this.items.filter(item => item.id != id);
       this.saveCart();
    }
 
@@ -252,6 +240,58 @@ class Cart {
    clear() {
       this.items = [];
       this.saveCart();
+   }
+}
+
+// Функция для отправки уведомления в Telegram
+async function sendTelegramNotification(orderData) {
+   // ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА СВОИ
+   const botToken = '8549791407:AAEG9-19c_LgTe9xtdqCjftSV97JIDHy5cM';
+   const chatId = 753234022;
+
+   // Форматируем текст сообщения
+   const messageText = `
+🛒 НОВЫЙ ЗАКАЗ в 3d-hub.by!
+
+№ Заказа: ${orderData.orderNumber}
+👤 Клиент: ${orderData.customer.fullName}
+📞 Телефон: ${orderData.customer.phone}
+📍 Адрес: ${orderData.customer.address}
+🚚 Доставка: ${orderData.customer.delivery === 'belpost' ? 'Белпочта' : 'Европочта'}
+
+Состав заказа:
+${orderData.items.map(item => `➠ ${item.name} × ${item.quantity} = ${item.price * item.quantity} руб.`).join('\n')}
+
+💰 Сумма заказа: ${orderData.total} руб.
+    `.trim();
+
+   // Отправляем запрос к Telegram API
+   try {
+      console.log('Отправляю сообщение в Telegram...');
+
+      const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({
+            chat_id: chatId,
+            text: messageText,
+            parse_mode: 'HTML'
+         })
+      });
+
+      const result = await response.json();
+      console.log('Ответ от Telegram:', result);
+
+      if (!result.ok) {
+         console.error('Ошибка Telegram API:', result);
+         throw new Error(result.description || 'Unknown Telegram API error');
+      }
+      return true;
+   } catch (error) {
+      console.error('Ошибка отправки в Telegram:', error);
+      throw error;
    }
 }
 
@@ -332,6 +372,29 @@ function initOrderModal() {
    const orderSuccess = document.getElementById('order-success');
    const successClose = document.getElementById('success-close');
 
+   // Создаем спиннер загрузки
+   const loadingSpinner = document.createElement('div');
+   loadingSpinner.id = 'loading-spinner';
+   loadingSpinner.innerHTML = `
+      <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
+         <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+         <p>Отправка заказа...</p>
+      </div>
+   `;
+   loadingSpinner.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center;';
+   document.body.appendChild(loadingSpinner);
+
+   // Показать/скрыть спиннер загрузки
+   function setLoading(isLoading) {
+      if (loadingSpinner) {
+         loadingSpinner.style.display = isLoading ? 'flex' : 'none';
+      }
+      if (submitOrder) {
+         submitOrder.disabled = isLoading;
+         submitOrder.textContent = isLoading ? 'Отправка...' : 'Подтвердить заказ';
+      }
+   }
+
    // Открытие модального окна
    window.openOrderModal = function () {
       orderModal.classList.add('active');
@@ -357,6 +420,7 @@ function initOrderModal() {
       document.querySelectorAll('.delivery-option').forEach(el => {
          el.classList.remove('selected');
       });
+      setLoading(false);
    }
 
    // Показать сообщение об ошибке
@@ -436,18 +500,49 @@ function initOrderModal() {
    cancelOrder.addEventListener('click', closeOrderModal);
 
    // Обработка отправки формы
-   submitOrder.addEventListener('click', function () {
-      if (validateForm()) {
-         // В реальном приложении здесь будет отправка данных на сервер
+   submitOrder.addEventListener('click', async function () {
+      if (!validateForm()) return;
 
-         // Показываем уведомление об успешном заказе
-         orderModal.classList.remove('active');
-         orderSuccess.classList.add('active');
+      try {
+         setLoading(true);
 
-         // Очищаем корзину
-         if (window.cart) {
-            window.cart.clear();
+         // Собираем данные формы
+         const fullName = document.getElementById('full-name').value.trim();
+         const phone = document.getElementById('phone').value.trim();
+         const address = document.getElementById('address').value.trim();
+         const delivery = document.querySelector('input[name="delivery"]:checked').value;
+
+         // Формируем данные заказа
+         const orderData = {
+            orderNumber: '3DHUB-' + Date.now(),
+            customer: {
+               fullName: fullName,
+               phone: phone,
+               address: address,
+               delivery: delivery
+            },
+            items: window.cart.items,
+            total: window.cart.getOrderTotal()
+         };
+
+         // Отправляем уведомление в Telegram
+         const telegramSent = await sendTelegramNotification(orderData);
+
+         if (telegramSent) {
+            // Показываем уведомление об успешном заказе
+            orderModal.classList.remove('active');
+            orderSuccess.classList.add('active');
+
+            // Очищаем корзину
+            if (window.cart) {
+               window.cart.clear();
+            }
          }
+      } catch (error) {
+         console.error('Ошибка при оформлении заказа:', error);
+         alert('Произошла ошибка при отправке заказа. Пожалуйста, свяжитесь с нами по телефону.');
+      } finally {
+         setLoading(false);
       }
    });
 
@@ -459,8 +554,9 @@ function initOrderModal() {
 
    // Обработчик для предотвращения закрытия модального окна при клике вне его
    orderModal.addEventListener('click', function (e) {
-      // Предотвращаем закрытие при клике вне модального окна
-      e.stopPropagation();
+      if (e.target === orderModal) {
+         closeOrderModal();
+      }
    });
 
    // Валидация полей в реальном времени
@@ -497,6 +593,12 @@ function initOrderModal() {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function () {
+
+   // Добавляем класс home-page к body если мы на главной странице
+   if (window.location.pathname === '/' || window.location.pathname === '/index.html' || window.location.pathname.endsWith('/')) {
+      document.body.classList.add('home-page');
+   }
+
    // Инициализация корзины
    window.cart = new Cart();
 
@@ -542,55 +644,3 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    });
 });
-
-
-// Функция для отправки уведомления в Telegram
-async function sendTelegramNotification(orderData) {
-   // ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА СВОИ
-   const botToken = '8549791407:AAEG9-19c_LgTe9xtdqCjftSV97JIDHy5cM';
-   const chatId = 753234022;    // УБРАТЬ КАВЫЧКИ - chatId должно быть числом!
-
-   // Форматируем текст сообщения
-   const messageText = `
-🛒 НОВЫЙ ЗАКАЗ в 3d-hub.by!
-
-№ Заказа: ${orderData.orderNumber}
-👤 Клиент: ${orderData.customer.fullName}
-📞 Телефон: ${orderData.customer.phone}
-📍 Адрес: ${orderData.customer.address}
-🚚 Доставка: ${orderData.customer.delivery === 'belpost' ? 'Белпочта' : 'Европочта'}
-
-Состав заказа:
-${orderData.items.map(item => `➠ ${item.name} × ${item.quantity} = ${item.price * item.quantity} руб.`).join('\n')}
-
-💵 ИТОГО К ОПЛАТЕ: ${orderData.total} руб.
-    `.trim();
-
-   // Отправляем запрос к Telegram API
-   try {
-      console.log('Отправляю сообщение в Telegram...');
-
-      const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-         method: 'POST',
-         headers: {
-            'Content-Type': 'application/json',
-         },
-         body: JSON.stringify({
-            chat_id: chatId,  // Теперь это число, а не строка
-            text: messageText
-         })
-      });
-
-      const result = await response.json();
-      console.log('Ответ от Telegram:', result);
-
-      if (!result.ok) {
-         console.error('Ошибка Telegram API:', result);
-         return false;
-      }
-      return true;
-   } catch (error) {
-      console.error('Ошибка отправки в Telegram:', error);
-      return false;
-   }
-}

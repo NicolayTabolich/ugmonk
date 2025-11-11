@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Название товара - 3d-hub.by</title>
+   <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+   <!-- Шапка сайта -->
+   <header class="header">
+      <div class="logo">
+         <svg viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20,10 L100,10 L100,40 L20,40 Z" fill="white" />
+            <text x="60" y="30" text-anchor="middle" fill="#10b981" font-size="14" font-weight="bold">3D-HUB.BY</text>
+         </svg>
+      </div>
+      <nav>
+         <ul class="nav-menu">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="catalog.html">Каталог</a></li>
+            <li><a href="about.html">О нас</a></li>
+            <li><a href="contacts.html">Контакты</a></li>
+            <li><a href="cart.html">Корзина</a></li>
+         </ul>
+      </nav>
+      <div class="header-right">
+         <a href="cart.html" class="cart-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+               <path
+                  d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+            </svg>
+            <div class="cart-count">0</div>
+         </a>
+         <div class="burger">
+            <span></span>
+            <span></span>
+            <span></span>
+         </div>
+      </div>
+   </header>
+
+   <!-- Основной контент -->
+   <main class="main-content">
+      <!-- Хлебные крошки -->
+      <nav class="breadcrumbs" id="breadcrumbs">
+         <a href="index.html">Главная</a>
+         <span class="breadcrumb-separator">/</span>
+         <a href="catalog.html">Каталог</a>
+         <span class="breadcrumb-separator">/</span>
+         <span class="breadcrumb-current">Загрузка...</span>
+      </nav>
+
+      <div class="product-container" id="product-container">
+         <!-- Товар будет загружаться динамически -->
+      </div>
+
+      <!-- Похожие товары -->
+      <section class="related-products" id="related-products">
+         <h2 class="section-title">Похожие товары</h2>
+         <div class="products-grid" id="related-products-grid">
+            <!-- Похожие товары будут загружаться динамически -->
+         </div>
+      </section>
+   </main>
+
+   <!-- Уведомление о добавлении в корзину -->
+   <div class="cart-notification">Товар добавлен в корзину!</div>
+
+   <script src="js/app.js"></script>
+   <script src="js/product.js"></script>
+</body>
+
+</html>
