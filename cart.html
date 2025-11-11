@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Корзина - 3d-hub.by</title>
+   <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+   <!-- Шапка сайта -->
+   <header class="header">
+      <div class="logo">
+         <svg viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20,10 L100,10 L100,40 L20,40 Z" fill="white" />
+            <text x="60" y="30" text-anchor="middle" fill="#10b981" font-size="14" font-weight="bold">3D-HUB.BY</text>
+         </svg>
+      </div>
+      <nav>
+         <ul class="nav-menu">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="catalog.html">Каталог</a></li>
+            <li><a href="about.html">О нас</a></li>
+            <li><a href="contacts.html">Контакты</a></li>
+            <li><a href="cart.html" class="active">Корзина</a></li>
+         </ul>
+      </nav>
+      <div class="header-right">
+         <a href="cart.html" class="cart-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+               <path
+                  d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+            </svg>
+            <div class="cart-count">0</div>
+         </a>
+         <div class="burger">
+            <span></span>
+            <span></span>
+            <span></span>
+         </div>
+      </div>
+   </header>
+
+   <!-- Основной контент -->
+   <main class="main-content">
+      <h1 class="page-title">Ваша корзина</h1>
+
+      <div class="cart-container">
+         <div class="cart-items" id="cart-items">
+            <!-- Товары будут добавляться динамически -->
+         </div>
+
+         <div class="cart-summary">
+            <h2 class="summary-title">Итог заказа</h2>
+            <div class="summary-row">
+               <span>Товары (0):</span>
+               <span id="items-total">0 руб.</span>
+            </div>
+            <div class="summary-row">
+               <span>Доставка:</span>
+               <span id="shipping-cost">0 руб.</span>
+            </div>
+            <div class="summary-row summary-total">
+               <span>Итого:</span>
+               <span id="order-total">0 руб.</span>
+            </div>
+            <button class="checkout-btn" id="checkout-btn">Оформить заказ</button>
+            <a href="index.html" class="continue-shopping">Продолжить покупки</a>
+         </div>
+      </div>
+   </main>
+
+   <!-- Модальное окно оформления заказа -->
+   <div class="modal-overlay" id="order-modal">
+      <div class="modal">
+         <div class="modal-header">
+            <h2 class="modal-title">Оформление заказа</h2>
+            <button class="modal-close" id="modal-close">×</button>
+         </div>
+         <div class="modal-body">
+            <form id="order-form">
+               <div class="form-group">
+                  <label class="form-label" for="full-name">ФИО *</label>
+                  <input type="text" id="full-name" class="form-input" placeholder="Введите ваше полное имя" required>
+                  <div class="error-message" id="name-error">Пожалуйста, введите ваше ФИО</div>
+               </div>
+
+               <div class="form-group">
+                  <label class="form-label" for="phone">Номер телефона *</label>
+                  <input type="tel" id="phone" class="form-input" placeholder="+375336013978" required>
+                  <div class="error-message" id="phone-error">Пожалуйста, введите номер в формате +375XXXXXXXXX</div>
+               </div>
+
+               <div class="form-group">
+                  <label class="form-label" for="address">Адрес доставки *</label>
+                  <input type="text" id="address" class="form-input" placeholder="Введите ваш адрес" required>
+                  <div class="error-message" id="address-error">Пожалуйста, введите адрес доставки</div>
+               </div>
+
+               <div class="form-group">
+                  <label class="form-label">Способ доставки *</label>
+                  <div class="delivery-options">
+                     <label class="delivery-option" id="belpost-option">
+                        <input type="radio" name="delivery" value="belpost" required>
+                        <span>Белпочта</span>
+                     </label>
+                     <label class="delivery-option" id="europost-option">
+                        <input type="radio" name="delivery" value="europost" required>
+                        <span>Европочта</span>
+                     </label>
+                  </div>
+                  <div class="error-message" id="delivery-error">Пожалуйста, выберите способ доставки</div>
+               </div>
+            </form>
+         </div>
+         <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancel-order">Отмена</button>
+            <button class="btn btn-primary" id="submit-order">Подтвердить заказ</button>
+         </div>
+      </div>
+   </div>
+
+   <!-- Уведомление об успешном заказе -->
+   <div class="order-success" id="order-success">
+      <div class="success-icon">✓</div>
+      <h2>Заказ успешно оформлен!</h2>
+      <p>Спасибо за ваш заказ. Мы свяжемся с вами в ближайшее время для подтверждения.</p>
+      <button class="btn btn-primary" id="success-close">Понятно</button>
+   </div>
+
+   <script src="js/index.js"></script>
+</body>
+
+</html>
