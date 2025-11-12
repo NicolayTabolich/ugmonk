@@ -2394,3 +2394,130 @@ body.home-page .header.scrolled {
   color: #94a3b8;
   margin-bottom: 25px;
 }
+
+/* Добавляем эти стили в конец файла style.css */
+
+/* Стили для выбора цвета */
+.color-selection {
+  margin: 20px 0;
+}
+
+.color-selection h3 {
+  font-size: 1.1em;
+  margin-bottom: 12px;
+  color: #e0e7ff;
+}
+
+.color-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.color-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.color-option:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.color-option.active {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.color-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.color-option.active .color-swatch {
+  border-color: #ffffff;
+  transform: scale(1.1);
+}
+
+.color-name {
+  font-size: 0.8em;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.color-option.active .color-name {
+  color: #10b981;
+  font-weight: bold;
+}
+
+/* Стили для отображения цвета в корзине */
+.item-color {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-label {
+  color: #94a3b8;
+  font-size: 0.9em;
+}
+
+.color-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-swatch-small {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.color-name-small {
+  font-size: 0.85em;
+  color: #e0e7ff;
+}
+
+/* Адаптивность для выбора цвета */
+@media (max-width: 768px) {
+  .color-options {
+    gap: 8px;
+  }
+
+  .color-option {
+    padding: 6px 10px;
+  }
+
+  .color-swatch {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .color-options {
+    justify-content: center;
+  }
+
+  .color-option {
+    padding: 5px 8px;
+  }
+
+  .color-name {
+    font-size: 0.75em;
+  }
+}

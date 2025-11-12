@@ -1,6 +1,5 @@
-// app.js
+// app.js - Основной функционал с поддержкой цветов
 
-// Функционал корзины
 class Cart {
    constructor() {
       this.items = this.loadCart();
@@ -54,29 +53,40 @@ class Cart {
       return this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
    }
 
-   // Получение итоговой суммы (без доставки, так как доставка по тарифам почты)
+   // Получение итоговой суммы (без доставки)
    getOrderTotal() {
       return this.getItemsTotal();
    }
 
-   // Добавление товара в корзину
+   // Добавление товара в корзину с учетом цвета
    addItem(product) {
-      const existingItem = this.items.find(item => item.id === product.id);
+      const existingItemIndex = this.items.findIndex(item =>
+         item.id === product.id &&
+         this.compareColors(item.selectedColor, product.selectedColor)
+      );
 
-      if (existingItem) {
-         existingItem.quantity += 1;
+      if (existingItemIndex !== -1) {
+         this.items[existingItemIndex].quantity += 1;
       } else {
          this.items.push({
             id: product.id,
             name: product.name,
             price: product.price,
-            image: product.image,
-            quantity: 1
+            image: product.selectedColor ? product.selectedColor.image : product.image,
+            quantity: 1,
+            selectedColor: product.selectedColor || null
          });
       }
 
       this.saveCart();
       this.showNotification();
+   }
+
+   // Сравнение цветов для корректного определения одинаковых товаров
+   compareColors(color1, color2) {
+      if (!color1 && !color2) return true;
+      if (!color1 || !color2) return false;
+      return color1.name === color2.name && color1.code === color2.code;
    }
 
    // Обновление сводки заказа
@@ -88,11 +98,14 @@ class Cart {
 
       const itemsTotal = this.getItemsTotal();
       const orderTotal = this.getOrderTotal();
-      const totalCount = this.getTotalCount();
 
       if (itemsTotalEl) itemsTotalEl.textContent = `${itemsTotal} руб.`;
       if (orderTotalEl) orderTotalEl.textContent = `${orderTotal} руб.`;
-      if (itemsCountEl) itemsCountEl.textContent = `Товары (${totalCount}):`;
+
+      // Обновление текста в сводке заказа
+      if (itemsCountEl) {
+         itemsCountEl.textContent = `Товары (${this.getTotalCount()}):`;
+      }
 
       // Блокировка кнопки оформления заказа, если корзина пуста
       if (checkoutBtn) {
@@ -110,45 +123,56 @@ class Cart {
       }
    }
 
-   // Отображение товаров в корзине
+   // Отображение товаров в корзине с цветами
    renderCartItems() {
       const cartItemsEl = document.getElementById('cart-items');
       if (!cartItemsEl) return;
 
       if (this.items.length === 0) {
          cartItemsEl.innerHTML = `
-                <div class="empty-cart">
-                    <div class="empty-cart-icon">🛒</div>
-                    <h2>Ваша корзина пуста</h2>
-                    <p>Добавьте товары из каталога, чтобы сделать заказ</p>
-                    <a href="catalog.html" class="checkout-btn" style="display: inline-block; width: auto; padding: 12px 30px;">Перейти к покупкам</a>
-                </div>
-            `;
+            <div class="empty-cart">
+               <div class="empty-cart-icon">🛒</div>
+               <h2>Ваша корзина пуста</h2>
+               <p>Добавьте товары из каталога, чтобы сделать заказ</p>
+               <a href="catalog.html" class="checkout-btn" style="display: inline-block; width: auto; padding: 12px 30px;">Перейти к покупкам</a>
+            </div>
+         `;
          return;
       }
 
       let itemsHTML = '';
 
-      this.items.forEach(item => {
+      this.items.forEach((item, index) => {
+         const colorInfo = item.selectedColor ? `
+            <div class="item-color">
+               <span class="color-label">Цвет:</span>
+               <div class="color-display">
+                  <div class="color-swatch-small" style="background-color: ${item.selectedColor.code}"></div>
+                  <span class="color-name-small">${item.selectedColor.name}</span>
+               </div>
+            </div>
+         ` : '';
+
          itemsHTML += `
-                <div class="cart-item" data-id="${item.id}">
-                    <div class="item-image">
-                        <img src="${item.image || 'https://images.unsplash.com/photo-1581784368655-0f72a6b3d0c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'}" alt="${item.name}">
-                    </div>
-                    <div class="item-details">
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-controls">
-                            <div class="quantity-controls">
-                                <button class="quantity-btn minus" data-id="${item.id}">-</button>
-                                <span class="quantity">${item.quantity}</span>
-                                <button class="quantity-btn plus" data-id="${item.id}">+</button>
-                            </div>
-                            <div class="item-price">${item.price * item.quantity} руб.</div>
-                            <button class="remove-btn" data-id="${item.id}">Удалить</button>
-                        </div>
-                    </div>
-                </div>
-            `;
+            <div class="cart-item" data-id="${item.id}" data-index="${index}">
+               <div class="item-image">
+                  <img src="${item.image}" alt="${item.name}">
+               </div>
+               <div class="item-details">
+                  <div class="item-name">${item.name}</div>
+                  ${colorInfo}
+                  <div class="item-controls">
+                     <div class="quantity-controls">
+                        <button class="quantity-btn minus" data-index="${index}">-</button>
+                        <span class="quantity">${item.quantity}</span>
+                        <button class="quantity-btn plus" data-index="${index}">+</button>
+                     </div>
+                     <div class="item-price">${item.price * item.quantity} руб.</div>
+                     <button class="remove-btn" data-index="${index}">Удалить</button>
+                  </div>
+               </div>
+            </div>
+         `;
       });
 
       cartItemsEl.innerHTML = itemsHTML;
@@ -162,45 +186,43 @@ class Cart {
       // Кнопки увеличения количества
       document.querySelectorAll('.quantity-btn.plus').forEach(btn => {
          btn.addEventListener('click', (e) => {
-            const id = e.target.getAttribute('data-id');
-            this.increaseQuantity(id);
+            const index = parseInt(e.target.getAttribute('data-index'));
+            this.increaseQuantity(index);
          });
       });
 
       // Кнопки уменьшения количества
       document.querySelectorAll('.quantity-btn.minus').forEach(btn => {
          btn.addEventListener('click', (e) => {
-            const id = e.target.getAttribute('data-id');
-            this.decreaseQuantity(id);
+            const index = parseInt(e.target.getAttribute('data-index'));
+            this.decreaseQuantity(index);
          });
       });
 
       // Кнопки удаления
       document.querySelectorAll('.remove-btn').forEach(btn => {
          btn.addEventListener('click', (e) => {
-            const id = e.target.getAttribute('data-id');
-            this.removeItem(id);
+            const index = parseInt(e.target.getAttribute('data-index'));
+            this.removeItem(index);
          });
       });
    }
 
    // Увеличение количества товара
-   increaseQuantity(id) {
-      const item = this.items.find(item => item.id == id);
-      if (item) {
-         item.quantity += 1;
+   increaseQuantity(index) {
+      if (this.items[index]) {
+         this.items[index].quantity += 1;
          this.saveCart();
       }
    }
 
    // Уменьшение количества товара
-   decreaseQuantity(id) {
-      const item = this.items.find(item => item.id == id);
-      if (item) {
-         if (item.quantity > 1) {
-            item.quantity -= 1;
+   decreaseQuantity(index) {
+      if (this.items[index]) {
+         if (this.items[index].quantity > 1) {
+            this.items[index].quantity -= 1;
          } else {
-            this.removeItem(id);
+            this.removeItem(index);
             return;
          }
          this.saveCart();
@@ -208,8 +230,8 @@ class Cart {
    }
 
    // Удаление товара из корзины
-   removeItem(id) {
-      this.items = this.items.filter(item => item.id != id);
+   removeItem(index) {
+      this.items.splice(index, 1);
       this.saveCart();
    }
 
@@ -260,7 +282,10 @@ async function sendTelegramNotification(orderData) {
 🚚 Доставка: ${orderData.customer.delivery === 'belpost' ? 'Белпочта' : 'Европочта'}
 
 Состав заказа:
-${orderData.items.map(item => `➠ ${item.name} × ${item.quantity} = ${item.price * item.quantity} руб.`).join('\n')}
+${orderData.items.map(item => {
+      const colorInfo = item.selectedColor ? ` (${item.selectedColor.name})` : '';
+      return `➠ ${item.name}${colorInfo} × ${item.quantity} = ${item.price * item.quantity} руб.`;
+   }).join('\n')}
 
 💰 Сумма заказа: ${orderData.total} руб.
     `.trim();
@@ -372,16 +397,16 @@ function initOrderModal() {
    const orderSuccess = document.getElementById('order-success');
    const successClose = document.getElementById('success-close');
 
-   // Создаем спиннер загрузки
+   // Создаем элемент для спиннера загрузки
    const loadingSpinner = document.createElement('div');
    loadingSpinner.id = 'loading-spinner';
+   loadingSpinner.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center;';
    loadingSpinner.innerHTML = `
-      <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <div style="background: white; padding: 20px; border-radius: 10px; text-align: center; color: black;">
          <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
          <p>Отправка заказа...</p>
       </div>
    `;
-   loadingSpinner.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center;';
    document.body.appendChild(loadingSpinner);
 
    // Показать/скрыть спиннер загрузки
@@ -410,7 +435,7 @@ function initOrderModal() {
 
    // Сброс формы
    function resetForm() {
-      orderForm.reset();
+      if (orderForm) orderForm.reset();
       document.querySelectorAll('.error-message').forEach(el => {
          el.classList.remove('show');
       });
@@ -425,14 +450,18 @@ function initOrderModal() {
 
    // Показать сообщение об ошибке
    function showError(inputId, errorId) {
-      document.getElementById(inputId).classList.add('error');
-      document.getElementById(errorId).classList.add('show');
+      const inputElement = document.getElementById(inputId);
+      const errorElement = document.getElementById(errorId);
+      if (inputElement) inputElement.classList.add('error');
+      if (errorElement) errorElement.classList.add('show');
    }
 
    // Скрыть сообщение об ошибке
    function hideError(inputId, errorId) {
-      document.getElementById(inputId).classList.remove('error');
-      document.getElementById(errorId).classList.remove('show');
+      const inputElement = document.getElementById(inputId);
+      const errorElement = document.getElementById(errorId);
+      if (inputElement) inputElement.classList.remove('error');
+      if (errorElement) errorElement.classList.remove('show');
    }
 
    // Валидация формы
@@ -440,8 +469,8 @@ function initOrderModal() {
       let isValid = true;
 
       // Проверка ФИО
-      const fullName = document.getElementById('full-name').value.trim();
-      if (fullName === '') {
+      const fullName = document.getElementById('full-name')?.value.trim();
+      if (!fullName) {
          showError('full-name', 'name-error');
          isValid = false;
       } else {
@@ -449,10 +478,9 @@ function initOrderModal() {
       }
 
       // Проверка телефона
-      const phone = document.getElementById('phone').value.trim();
-      // Проверяем формат +375XXXXXXXXX
+      const phone = document.getElementById('phone')?.value.trim();
       const phoneRegex = /^\+375\d{9}$/;
-      if (phone === '' || !phoneRegex.test(phone)) {
+      if (!phone || !phoneRegex.test(phone)) {
          showError('phone', 'phone-error');
          isValid = false;
       } else {
@@ -460,8 +488,8 @@ function initOrderModal() {
       }
 
       // Проверка адреса
-      const address = document.getElementById('address').value.trim();
-      if (address === '') {
+      const address = document.getElementById('address')?.value.trim();
+      if (!address) {
          showError('address', 'address-error');
          isValid = false;
       } else {
@@ -471,10 +499,10 @@ function initOrderModal() {
       // Проверка способа доставки
       const deliverySelected = document.querySelector('input[name="delivery"]:checked');
       if (!deliverySelected) {
-         document.getElementById('delivery-error').classList.add('show');
+         document.getElementById('delivery-error')?.classList.add('show');
          isValid = false;
       } else {
-         document.getElementById('delivery-error').classList.remove('show');
+         document.getElementById('delivery-error')?.classList.remove('show');
       }
 
       return isValid;
@@ -488,69 +516,73 @@ function initOrderModal() {
          });
          this.classList.add('selected');
          const radio = this.querySelector('input[type="radio"]');
-         radio.checked = true;
+         if (radio) radio.checked = true;
 
          // Скрываем ошибку при выборе способа доставки
-         document.getElementById('delivery-error').classList.remove('show');
+         document.getElementById('delivery-error')?.classList.remove('show');
       });
    });
 
    // Закрытие модального окна
-   modalClose.addEventListener('click', closeOrderModal);
-   cancelOrder.addEventListener('click', closeOrderModal);
+   if (modalClose) modalClose.addEventListener('click', closeOrderModal);
+   if (cancelOrder) cancelOrder.addEventListener('click', closeOrderModal);
 
    // Обработка отправки формы
-   submitOrder.addEventListener('click', async function () {
-      if (!validateForm()) return;
+   if (submitOrder) {
+      submitOrder.addEventListener('click', async function () {
+         if (!validateForm()) return;
 
-      try {
-         setLoading(true);
+         try {
+            setLoading(true);
 
-         // Собираем данные формы
-         const fullName = document.getElementById('full-name').value.trim();
-         const phone = document.getElementById('phone').value.trim();
-         const address = document.getElementById('address').value.trim();
-         const delivery = document.querySelector('input[name="delivery"]:checked').value;
+            // Собираем данные формы
+            const fullName = document.getElementById('full-name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const delivery = document.querySelector('input[name="delivery"]:checked').value;
 
-         // Формируем данные заказа
-         const orderData = {
-            orderNumber: '3DHUB-' + Date.now(),
-            customer: {
-               fullName: fullName,
-               phone: phone,
-               address: address,
-               delivery: delivery
-            },
-            items: window.cart.items,
-            total: window.cart.getOrderTotal()
-         };
+            // Формируем данные заказа
+            const orderData = {
+               orderNumber: '3DHUB-' + Date.now(),
+               customer: {
+                  fullName: fullName,
+                  phone: phone,
+                  address: address,
+                  delivery: delivery
+               },
+               items: window.cart.items,
+               total: window.cart.getOrderTotal()
+            };
 
-         // Отправляем уведомление в Telegram
-         const telegramSent = await sendTelegramNotification(orderData);
+            // Отправляем уведомление в Telegram
+            const telegramSent = await sendTelegramNotification(orderData);
 
-         if (telegramSent) {
-            // Показываем уведомление об успешном заказе
-            orderModal.classList.remove('active');
-            orderSuccess.classList.add('active');
+            if (telegramSent) {
+               // Показываем уведомление об успешном заказе
+               orderModal.classList.remove('active');
+               orderSuccess.classList.add('active');
 
-            // Очищаем корзину
-            if (window.cart) {
-               window.cart.clear();
+               // Очищаем корзину
+               if (window.cart) {
+                  window.cart.clear();
+               }
             }
+         } catch (error) {
+            console.error('Ошибка при оформлении заказа:', error);
+            alert('Произошла ошибка при отправке заказа. Пожалуйста, свяжитесь с нами по телефону.');
+         } finally {
+            setLoading(false);
          }
-      } catch (error) {
-         console.error('Ошибка при оформлении заказа:', error);
-         alert('Произошла ошибка при отправке заказа. Пожалуйста, свяжитесь с нами по телефону.');
-      } finally {
-         setLoading(false);
-      }
-   });
+      });
+   }
 
    // Закрытие уведомления об успешном заказе
-   successClose.addEventListener('click', function () {
-      orderSuccess.classList.remove('active');
-      document.body.style.overflow = 'auto';
-   });
+   if (successClose) {
+      successClose.addEventListener('click', function () {
+         orderSuccess.classList.remove('active');
+         document.body.style.overflow = 'auto';
+      });
+   }
 
    // Обработчик для предотвращения закрытия модального окна при клике вне его
    orderModal.addEventListener('click', function (e) {
@@ -560,35 +592,45 @@ function initOrderModal() {
    });
 
    // Валидация полей в реальном времени
-   document.getElementById('full-name').addEventListener('input', function () {
-      if (this.value.trim() !== '') {
-         hideError('full-name', 'name-error');
-      }
-   });
+   const fullNameInput = document.getElementById('full-name');
+   const phoneInput = document.getElementById('phone');
+   const addressInput = document.getElementById('address');
 
-   document.getElementById('phone').addEventListener('input', function () {
-      // Автоматически добавляем +375 если пользователь начинает вводить номер
-      if (this.value.trim() === '') {
-         hideError('phone', 'phone-error');
-      } else if (!this.value.startsWith('+375')) {
-         // Если пользователь начал вводить номер без +375, предлагаем добавить
-         if (this.value.length <= 4 && !this.value.includes('+')) {
-            this.value = '+375' + this.value;
+   if (fullNameInput) {
+      fullNameInput.addEventListener('input', function () {
+         if (this.value.trim() !== '') {
+            hideError('full-name', 'name-error');
          }
-      }
+      });
+   }
 
-      // Проверяем формат после ввода
-      const phoneRegex = /^\+375\d{9}$/;
-      if (phoneRegex.test(this.value)) {
-         hideError('phone', 'phone-error');
-      }
-   });
+   if (phoneInput) {
+      phoneInput.addEventListener('input', function () {
+         // Автоматически добавляем +375 если пользователь начинает вводить номер
+         if (this.value.trim() === '') {
+            hideError('phone', 'phone-error');
+         } else if (!this.value.startsWith('+375')) {
+            // Если пользователь начал вводить номер без +375, предлагаем добавить
+            if (this.value.length <= 4 && !this.value.includes('+')) {
+               this.value = '+375' + this.value;
+            }
+         }
 
-   document.getElementById('address').addEventListener('input', function () {
-      if (this.value.trim() !== '') {
-         hideError('address', 'address-error');
-      }
-   });
+         // Проверяем формат после ввода
+         const phoneRegex = /^\+375\d{9}$/;
+         if (phoneRegex.test(this.value)) {
+            hideError('phone', 'phone-error');
+         }
+      });
+   }
+
+   if (addressInput) {
+      addressInput.addEventListener('input', function () {
+         if (this.value.trim() !== '') {
+            hideError('address', 'address-error');
+         }
+      });
+   }
 }
 
 // Инициализация при загрузке страницы
@@ -644,3 +686,13 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    });
 });
+
+// Добавляем стили для анимации спиннера
+const style = document.createElement('style');
+style.textContent = `
+   @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+   }
+`;
+document.head.appendChild(style);
